@@ -1,0 +1,162 @@
+--made by leojeb
+
+local ScreenGui = Instance.new("ScreenGui")
+local main = Instance.new("Frame")
+local title = Instance.new("TextLabel")
+local aimbot = Instance.new("TextButton")
+local close = Instance.new("TextButton")
+local main2 = Instance.new("Frame")
+local open = Instance.new("TextButton")
+
+--Properties:
+
+ScreenGui.Parent = game.CoreGui
+
+main.Name = "main"
+main.Parent = ScreenGui
+main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+main.Position = UDim2.new(0.675398648, 0, 0.737732649, 0)
+main.Size = UDim2.new(0, 260, 0, 155)
+main.Draggable = true
+
+title.Name = "title"
+title.Parent = main
+title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+title.Position = UDim2.new(0.180769235, 0, 0, 0)
+title.Size = UDim2.new(0, 200, 0, 50)
+title.Font = Enum.Font.SourceSans
+title.Text = "universal aimbot"
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.TextSize = 14.000
+
+aimbot.Name = "aimbot"
+aimbot.Parent = main
+aimbot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+aimbot.Position = UDim2.new(0.273076922, 0, 0.49032259, 0)
+aimbot.Size = UDim2.new(0, 118, 0, 50)
+aimbot.Font = Enum.Font.SourceSans
+aimbot.Text = "Aimbot on"
+aimbot.TextColor3 = Color3.fromRGB(0, 0, 0)
+aimbot.TextSize = 14.000
+aimbot.MouseButton1Down:connect(function()
+    local dwCamera = workspace.CurrentCamera
+    local dwRunService = game:GetService("RunService")
+    local dwUIS = game:GetService("UserInputService")
+    local dwEntities = game:GetService("Players")
+    local dwLocalPlayer = dwEntities.LocalPlayer
+    local dwMouse = dwLocalPlayer:GetMouse()
+
+    local settings = {
+        Aimbot = true,
+        Aiming = false,
+        Aimbot_AimPart = "Head",
+        Aimbot_TeamCheck = true,
+        Aimbot_Draw_FOV = true,
+        Aimbot_FOV_Radius = 200,
+        Aimbot_FOV_Color = Color3.fromRGB(255,255,255)
+    }
+
+    local fovcircle = Drawing.new("Circle")
+    fovcircle.Visible = settings.Aimbot_Draw_FOV
+    fovcircle.Radius = settings.Aimbot_FOV_Radius
+    fovcircle.Color = settings.Aimbot_FOV_Color
+    fovcircle.Thickness = 1
+    fovcircle.Filled = false
+    fovcircle.Transparency = 1
+
+    fovcircle.Position = Vector2.new(dwCamera.ViewportSize.X / 2, dwCamera.ViewportSize.Y / 2)
+
+    dwUIS.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton2 then
+            settings.Aiming = true
+        end
+    end)
+
+    dwUIS.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton2 then
+            settings.Aiming = false
+        end
+    end)
+
+    dwRunService.RenderStepped:Connect(function()
+
+        local dist = math.huge
+        local closest_char = nil
+
+        if settings.Aiming then
+
+            for i,v in next, dwEntities:GetChildren() do 
+
+                if v ~= dwLocalPlayer and
+                    v.Character and
+                    v.Character:FindFirstChild("HumanoidRootPart") and
+                    v.Character:FindFirstChild("Humanoid") and
+                    v.Character:FindFirstChild("Humanoid").Health > 0 then
+
+                    if settings.Aimbot_TeamCheck == true and
+                        v.Team ~= dwLocalPlayer.Team or
+                        settings.Aimbot_TeamCheck == false then
+
+                        local char = v.Character
+                        local char_part_pos, is_onscreen = dwCamera:WorldToViewportPoint(char[settings.Aimbot_AimPart].Position)
+
+                        if is_onscreen then
+
+                            local mag = (Vector2.new(dwMouse.X, dwMouse.Y) - Vector2.new(char_part_pos.X, char_part_pos.Y)).Magnitude
+
+                            if mag < dist and mag < settings.Aimbot_FOV_Radius then
+
+                                dist = mag
+                                closest_char = char
+
+                            end
+                        end
+                    end
+                end
+            end
+
+            if closest_char ~= nil and
+                closest_char:FindFirstChild("HumanoidRootPart") and
+                closest_char:FindFirstChild("Humanoid") and
+                closest_char:FindFirstChild("Humanoid").Health > 0 then
+
+                dwCamera.CFrame = CFrame.new(dwCamera.CFrame.Position, closest_char[settings.Aimbot_AimPart].Position)
+            end
+        end
+    end)
+end)
+
+close.Name = "close"
+close.Parent = main
+close.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+close.Size = UDim2.new(0, 30, 0, 27)
+close.Font = Enum.Font.SourceSans
+close.Text = "-"
+close.TextColor3 = Color3.fromRGB(0, 0, 0)
+close.TextSize = 14.000
+close.MouseButton1Down:connect(function()
+    main.Visible = false
+    main2.Visible = true
+end)
+
+main2.Name = "main2"
+main2.Parent = ScreenGui
+main2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+main2.Position = UDim2.new(0, 0, 0.509306252, 0)
+main2.Size = UDim2.new(0, 38, 0, 22)
+main2.Visible = false
+
+open.Name = "open"
+open.Parent = main2
+open.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+open.Size = UDim2.new(0, 46, 0, 24)
+open.Font = Enum.Font.SourceSans
+open.Text = "+"
+open.TextColor3 = Color3.fromRGB(0, 0, 0)
+open.TextScaled = true
+open.TextSize = 14.000
+open.TextWrapped = true
+open.MouseButton1Down:connect(function()
+    main2.Visible = false
+    main.Visible = true
+end)
